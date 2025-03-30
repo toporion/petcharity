@@ -1,11 +1,13 @@
 import { Button } from '@mui/material';
 import React from 'react';
+import PetsList from '../petList/PetsList';
+
 
 const Home = () => {
     return (
         <div>
-            <h1>Test</h1>
-            <Button variant='contained'>Home</Button>
+           
+           <PetsList/>
         </div>
     );
 };
