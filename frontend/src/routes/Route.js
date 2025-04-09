@@ -14,6 +14,9 @@ import CreatePet from "../admin/CreatePet";
 import AdminAdoption from "../admin/AdminAdoption";
 import AdoptForm from "../pages/adoptForm/AdoptForm";
 import AdminUpdate from "../admin/AdminUpdate";
+import Donation from "../pages/donation/Donation";
+import CheckoutForm from "../pages/checkOutForm/CheckoutForm";
+import AdminChat from "../admin/AdminChat";
 
 
 const router = createBrowserRouter([
@@ -25,7 +28,10 @@ const router = createBrowserRouter([
             { path: "/login", element: <Login /> },
             { path: "/pet", element: <PetsList /> },
             {path:"/register",element:<RegisterForm/>},
-            {path:"/adopt/:animalId",element:<AdoptForm/>}
+            {path:"/adopt/:animalId",element:<AdoptForm/>},
+            {path:"/donation",element:<Donation/>},
+            {path:"/checkOut",element:<CheckoutForm/>},
+
         ]
     },
     {
@@ -38,7 +44,11 @@ const router = createBrowserRouter([
             { path: "users", element: <AdminUsers /> },
             { path: "petCreate", element:<CreatePet/> },
             { path: "adoptions", element:<AdminAdoption/> },
-            { path: "update/:id", element:<AdminUpdate/> }
+            { path: "update/:id", element:<AdminUpdate/> },
+            {
+                path: 'admin-chat',
+                element: <AdminChat /> // ✅ add this route
+              }
         ]
     }
 ]);

@@ -145,4 +145,16 @@ const makeRole = async (req, res) => {
 
     }
 }
-module.exports = { createUser, loginUser, getAllUser, getUserById,makeRole,deleteUser}
+
+const getAdminId = async (req, res) => {
+    try {
+        const admin = await UserModel.findOne({ role: "admin" }).select("_id");
+        if (!admin) return res.status(404).json({ error: "No admin found" });
+
+        res.json({ adminId: admin._id });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = { createUser, loginUser, getAllUser, getUserById,makeRole,deleteUser,getAdminId}

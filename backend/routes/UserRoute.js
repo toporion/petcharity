@@ -1,4 +1,4 @@
-const { createUser, loginUser, getAllUser, getUserById, makeRole, deleteUser } = require('../controllers/UserController')
+const { createUser, loginUser, getAllUser, getUserById, makeRole, deleteUser, getAdminId } = require('../controllers/UserController')
 const imageUpload = require('../middlewares/imageUploader')
 
 const route=require('express').Router()
@@ -9,5 +9,6 @@ route.get('/users',getAllUser)
 route.get('/users/:id',getUserById)
 route.delete('/users/:id',deleteUser)
 route.patch('/role/:id',makeRole)
+route.get("/admin-id", getAdminId);
 
 module.exports=route
