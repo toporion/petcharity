@@ -10,7 +10,7 @@ require('./connection/db');
 const UserRoute = require('./routes/UserRoute');
 const AnimalRoute = require('./routes/AnimalRoute');
 const DonationRoute = require('./routes/DonationRoute');
-const PaymentRoute = require('./routes/PaymentRoute');
+
 const ChatRoute = require("./routes/ChatRoute");
 const adminReportRoutes = require('./routes/AdminReportRoute');
 const MessageRoute = require('./routes/MessageRoutes');
@@ -25,7 +25,7 @@ app.use(express.json());
 app.use('/api', UserRoute);
 app.use('/api', AnimalRoute);
 app.use('/api', DonationRoute);
-app.use('/api', PaymentRoute);
+
 app.use("/api", ChatRoute);
 app.use("/api", adminReportRoutes);
 app.use('/api/messages', MessageRoute);
