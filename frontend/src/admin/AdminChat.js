@@ -1,30 +1,42 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import io from 'socket.io-client'; // ✅ 1. Import
+import io from 'socket.io-client';
 
-const adminId = '67d9a319418a550493c84d2a'; // ✅ Your real admin ID
-const socket = io('http://localhost:8080'); // ✅ 2. Connect once outside component
+const adminId = '67d9a319418a550493c84d2a';
+const socket = io('http://localhost:8080');
 
 const AdminChat = () => {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [chat, setChat] = useState([]);
   const [message, setMessage] = useState('');
+  const [typingStatus, setTypingStatus] = useState(false);
 
   useEffect(() => {
-    // ✅ 3. Join admin room
     socket.emit('join', adminId);
 
-    // ✅ 4. Listen for incoming messages
     socket.on('receiveMessage', (data) => {
-      if (data.senderId === selectedUser) {
+      if (
+        data.senderId === selectedUser || 
+        data.receiverId === selectedUser
+      ) {
         setChat((prev) => [...prev, data]);
       }
     });
+    
 
-    // ✅ Clean up on unmount
+    socket.on('typing', ({ senderId }) => {
+      if (senderId === selectedUser) setTypingStatus(true);
+    });
+
+    socket.on('stopTyping', ({ senderId }) => {
+      if (senderId === selectedUser) setTypingStatus(false);
+    });
+
     return () => {
       socket.off('receiveMessage');
+      socket.off('typing');
+      socket.off('stopTyping');
     };
   }, [selectedUser]);
 
@@ -53,23 +65,36 @@ const AdminChat = () => {
 
   const sendMessage = async () => {
     if (!message.trim()) return;
-  
+
     const newMsg = {
       senderId: adminId,
       receiverId: selectedUser,
       message,
     };
-  
+
     setMessage('');
-  
+
     try {
       await axios.post('http://localhost:8080/api/messages/send', newMsg);
-      socket.emit('sendMessage', newMsg); // ✅ socket handles real-time display
+      socket.emit('sendMessage', newMsg);
+      socket.emit('stopTyping', { senderId: adminId, receiverId: selectedUser });
     } catch (error) {
       console.error("Message send failed:", error);
     }
   };
-  
+
+  // ✅ Trigger typing
+  const handleTyping = () => {
+    socket.emit('typing', { senderId: adminId, receiverId: selectedUser });
+
+    // Debounce stopTyping
+    if (typingTimeout) clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+      socket.emit('stopTyping', { senderId: adminId, receiverId: selectedUser });
+    }, 1000);
+  };
+
+  let typingTimeout;
 
   return (
     <div className="flex h-screen">
@@ -93,13 +118,13 @@ const AdminChat = () => {
               {chat.map((msg, i) => (
                 <div
                   key={i}
-                  className={`mb-2 p-2 rounded-lg max-w-[70%] ${msg.senderId._id === adminId
-                      ? 'bg-blue-500 text-white ml-auto'
-                      : 'bg-gray-300 text-black'
+                  className={`mb-2 p-2 rounded-lg max-w-[70%] ${msg.senderId._id === adminId || msg.senderId === adminId
+                    ? 'bg-blue-500 text-white ml-auto'
+                    : 'bg-gray-300 text-black'
                     }`}
                 >
                   <div className="text-xs font-medium mb-1">
-                    {msg.senderId.name}
+                    {msg.senderId?.name || 'You'}
                   </div>
                   {msg.message}
                   <div className="text-[10px] text-right text-gray-600 mt-1">
@@ -107,13 +132,19 @@ const AdminChat = () => {
                   </div>
                 </div>
               ))}
-
+              {typingStatus && (
+                <div className="text-sm italic text-gray-500 -mt-4">Typing...</div>
+              )}
             </div>
+
             <div className="flex gap-2 mt-2">
               <input
                 className="flex-1 border rounded px-2"
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                onChange={(e) => {
+                  setMessage(e.target.value);
+                  handleTyping(); // ✅ trigger on input
+                }}
                 onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
                 placeholder="Type a message..."
               />
